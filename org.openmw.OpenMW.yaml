@@ -173,8 +173,8 @@ modules:
       - "make install PREFIX=/app"
     sources:
       - type: archive
-        url: https://github.com/LuaJIT/LuaJIT/archive/refs/tags/v2.0.5.tar.gz
-        sha256: 8bb29d84f06eb23c7ea4aa4794dbb248ede9fcb23b6989cbef81dc79352afc97
+        url: https://github.com/LuaJIT/LuaJIT/archive/refs/tags/v2.1.ROLLING.tar.gz
+        sha256: 31d7a4853df4c548bf91c13d3b690d19663d4c06ae952b62606c8225d0b410ad
 
   - name: openmw
     builddir: true
