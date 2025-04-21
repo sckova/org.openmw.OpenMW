@@ -1,13 +1,14 @@
 ---
 app-id: org.openmw.OpenMW
 runtime: org.kde.Platform
-runtime-version: '5.15-22.08'
+runtime-version: '6.7'
 sdk: org.kde.Sdk
 command: openmw-launcher
 rename-appdata-file: openmw.appdata.xml
 finish-args:
   - "--share=ipc"
-  - "--socket=x11"
+  - "--socket=wayland"
+  - "--socket=fallback-x11"
   - "--device=all"
   - "--filesystem=host"
   - "--socket=pulseaudio"
@@ -84,6 +85,7 @@ modules:
       - "-DBUILD_OSG_PLUGIN_BMP=1"
       - "-DBUILD_OSG_PLUGIN_JPEG=1"
       - "-DBUILD_OSG_PLUGIN_PNG=1"
+      - "-DBUILD_OSG_PLUGIN_FREETYPE=1"
       - "-DBUILD_OSG_DEPRECATED_SERIALIZERS=0"
       - "-DBUILD_OSG_APPLICATIONS=0"
       - "-DCMAKE_BUILD_TYPE=Release"
@@ -123,10 +125,11 @@ modules:
       - "-DMYGUI_BUILD_DEMOS=0"
       - "-DMYGUI_BUILD_TOOLS=0"
       - "-DMYGUI_BUILD_PLUGINS=0"
+      - "-DMYGUI_DONT_USE_OBSOLETE=1"
     sources:
       - type: archive
-        url: https://github.com/MyGUI/mygui/archive/refs/tags/MyGUI3.4.1.tar.gz
-        sha256: bdf730bdeb4ad89e6b8223967db01aa5274d2b93adc2c0d6aa4842faeed4de1a
+        url: https://github.com/MyGUI/mygui/archive/refs/tags/MyGUI3.4.3.tar.gz
+        sha256: 33c91b531993047e77cace36d6fea73634b8c17bd0ed193d4cd12ac7c6328abd
 
   - name: libunshield
     buildsystem: cmake-ninja
@@ -156,8 +159,8 @@ modules:
       - "-DRECASTNAVIGATION_EXAMPLES=no"
     sources:
       - type: archive
-        url: https://github.com/recastnavigation/recastnavigation/archive/c5cbd53024c8a9d8d097a4371215e3342d2fdc87.zip
-        sha256: 53dacfd7bead4d3b0c9a04a648caed3e7c3900e0aba765c15dee26b50f6103c6
+        url: https://github.com/recastnavigation/recastnavigation/archive/c393777d26d2ff6519ac23612abf8af42678c9dd.zip
+        sha256: 7d7fc38c9a52dbda0ba1dab70d1ed59da1178ab1c4fa209cdb7cc2dcfce8e4ea
 
   - name: yaml-cpp
     buildsystem: cmake-ninja
@@ -188,9 +191,7 @@ modules:
     sources:
       - type: git
         url: https://gitlab.com/OpenMW/openmw.git
-        tag: openmw-0.48.0
-      - type: patch
-        path: update-metainfo.patch
+        tag: master
       - type: shell
         commands:
           - "sed -i 's:>org.openmw.launcher.desktop<:>org.openmw.OpenMW.desktop<:' files/openmw.appdata.xml"
