@@ -1,0 +1,82 @@
+name: build and release openmw flatpak
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+  schedule:
+    - cron: "0 13 * * 1"
+
+jobs:
+  build:
+    name: build flatpak (${{ matrix.variant.arch }})
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.9
+      options: --privileged
+    strategy:
+      matrix:
+        variant:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.variant.runner }}
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: build flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: org.openmw.OpenMW.flatpak
+          manifest-path: org.openmw.OpenMW.yaml
+          arch: ${{ matrix.variant.arch }}
+          verbose: true
+
+      - name: rename bundle per architecture
+        run: mv org.openmw.OpenMW.flatpak org.openmw.OpenMW-${{ matrix.variant.arch }}.flatpak
+
+      - name: upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openmw-${{ matrix.variant.arch }}
+          path: org.openmw.OpenMW-${{ matrix.variant.arch }}.flatpak
+
+  release:
+    name: create github release
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: download x86_64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: openmw-x86_64
+          path: ./build
+
+      - name: download aarch64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: openmw-aarch64
+          path: ./build
+
+      - name: fetch latest upstream openmw commit
+        id: fetch_sha
+        run: |
+          latest_sha=$(curl -s https://api.github.com/repos/OpenMW/openmw/commits/main | jq -r '.sha')
+          echo "latest_sha=$latest_sha" >> $GITHUB_OUTPUT
+
+      - name: create github release with assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: tag-${{ github.sha }}
+          name: rolling
+          body: |
+            Automated release for commit ${{ github.sha }}
+            Latest upstream OpenMW commit: ${{ needs.build.steps.fetch_sha.outputs.latest_sha }}
+          files: ./build/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
