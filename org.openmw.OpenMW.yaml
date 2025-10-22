@@ -242,7 +242,7 @@ modules:
     sources:
       - type: git
         url: https://gitlab.com/OpenMW/openmw.git
-        tag: openmw-0.49.0
+        tag: master
       - type: patch
         path: openmw-build.patch
       - type: shell
